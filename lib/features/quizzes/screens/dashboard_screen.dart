@@ -6,7 +6,14 @@ import '../../auth/bloc/auth_bloc.dart';
 import 'create_quiz_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
-  const DashboardScreen({super.key, this.onLaunch});
+  const DashboardScreen({
+    super.key,
+    this.onLaunch,
+    this.hostUserId,
+  });
+
+  /// ID du host (user authentifié)
+  final String? hostUserId;
 
   /// Callback quand le host clique "Launch" sur un quiz
   final void Function(String quizId)? onLaunch;
@@ -24,8 +31,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   void _openCreateQuiz() {
+    if (widget.hostUserId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Erreur: User ID tidak ditemukan'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
     Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => const CreateQuizScreen()),
+      MaterialPageRoute(
+        builder: (_) => CreateQuizScreen(hostUserId: widget.hostUserId!),
+      ),
     );
   }
 

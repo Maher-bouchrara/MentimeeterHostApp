@@ -34,11 +34,29 @@ class Quiz extends Equatable {
 
 // ── Modèle Question ─────────────────────────────────────────────────
 class QuizQuestion extends Equatable {
-  const QuizQuestion({required this.id, required this.text});
+  const QuizQuestion({
+    required this.id,
+    required this.text,
+    this.optionA = '',
+    this.optionB = '',
+    this.optionC = '',
+    this.optionD = '',
+    this.correctOption = 'A',
+    this.orderIndex = 0,
+  });
+
   final String id;
   final String text;
+  final String optionA;
+  final String optionB;
+  final String optionC;
+  final String optionD;
+  final String correctOption; // 'A' | 'B' | 'C' | 'D'
+  final int orderIndex;
+
   @override
-  List<Object?> get props => [id, text];
+  List<Object?> get props =>
+      [id, text, optionA, optionB, optionC, optionD, correctOption, orderIndex];
 }
 
 // ── États ────────────────────────────────────────────────────────────
@@ -60,17 +78,20 @@ class QuizLoaded extends QuizState {
   const QuizLoaded({
     required this.quizzes,
     this.selectedQuiz,
+    this.isSaving = false,
   });
   final List<Quiz> quizzes;
   final Quiz? selectedQuiz;
+  final bool isSaving; 
 
-  QuizLoaded copyWith({List<Quiz>? quizzes, Quiz? selectedQuiz}) => QuizLoaded(
+  QuizLoaded copyWith({List<Quiz>? quizzes, Quiz? selectedQuiz, bool? isSaving}) => QuizLoaded(
         quizzes: quizzes ?? this.quizzes,
         selectedQuiz: selectedQuiz ?? this.selectedQuiz,
+        isSaving: isSaving ?? this.isSaving,
       );
 
   @override
-  List<Object?> get props => [quizzes, selectedQuiz];
+  List<Object?> get props => [quizzes, selectedQuiz, isSaving];
 }
 
 class QuizError extends QuizState {

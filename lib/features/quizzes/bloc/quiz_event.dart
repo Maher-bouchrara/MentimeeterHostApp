@@ -13,11 +13,19 @@ class LoadQuizzes extends QuizEvent {
 
 /// Créer un nouveau quiz
 class CreateQuiz extends QuizEvent {
-  const CreateQuiz({required this.title, this.description = ''});
+  const CreateQuiz({
+    required this.title,
+    this.description = '',
+    required this.createdBy,
+    this.questions = const [],
+  });
   final String title;
   final String description;
+  final String createdBy;
+  final List<QuizQuestion> questions;
+
   @override
-  List<Object?> get props => [title, description];
+  List<Object?> get props => [title, description, createdBy, questions];
 }
 
 /// Supprimer un quiz

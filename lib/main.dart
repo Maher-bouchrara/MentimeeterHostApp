@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'core/theme.dart';
+import 'core/graphql_service.dart';
 import 'features/auth/bloc/auth_bloc.dart';
 import 'features/auth/screens/login_screen.dart';
 import 'features/quizzes/bloc/quiz_bloc.dart';
@@ -9,7 +10,17 @@ import 'features/quizzes/screens/dashboard_screen.dart';
 // import 'features/session/bloc/session_bloc.dart';
 import 'features/session/screens/session_screen.dart';
 
-void main() {
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+
+  GraphQLService.instance.init();
+
   runApp(const QuizHostApp());
 }
 
@@ -45,6 +56,7 @@ class _AppRouter extends StatelessWidget {
       builder: (ctx, state) {
         if (state is AuthAuthenticated) {
           return DashboardScreen(
+            hostUserId: state.userId,
             onLaunch: (quizId) {
               // Récupère le quiz sélectionné depuis le QuizBloc
               final quizState = ctx.read<QuizBloc>().state;

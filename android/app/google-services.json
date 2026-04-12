@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "432946371252",
+    "project_id": "mentimeter-6c64b",
+    "storage_bucket": "mentimeter-6c64b.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:432946371252:android:de866d840c41bac49755e1",
+        "android_client_info": {
+          "package_name": "com.example.hostapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBvNGMiaNPDThoArmLPMp-AgYyOIKwK70c"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

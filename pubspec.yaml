@@ -19,6 +19,9 @@ dependencies:
 
   # Navigation
   go_router: ^13.2.0
+  firebase_core: ^4.6.0
+  firebase_auth: ^6.3.0
+  graphql_flutter: ^5.3.0
 
 dev_dependencies:
   flutter_test:

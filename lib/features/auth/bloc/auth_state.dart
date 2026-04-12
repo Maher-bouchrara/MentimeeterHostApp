@@ -18,10 +18,16 @@ class AuthLoading extends AuthState {
 
 /// Connecté avec succès
 class AuthAuthenticated extends AuthState {
-  const AuthAuthenticated({required this.email});
+  const AuthAuthenticated({
+    required this.email,
+    this.userId,
+    this.displayName,
+  });
   final String email;
+  final String? userId; // ID PostgreSQL
+  final String? displayName;
   @override
-  List<Object?> get props => [email];
+  List<Object?> get props => [email, userId, displayName];
 }
 
 /// Erreur de connexion
