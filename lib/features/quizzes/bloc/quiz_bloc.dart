@@ -18,43 +18,45 @@ class QuizBloc extends Bloc<QuizEvent, QuizState> {
     LoadQuizzes event,
     Emitter<QuizState> emit,
   ) async {
+    print('🔄 LoadQuizzes triggered with createdBy: ${event.createdBy}');
     emit(const QuizLoading());
     try {
-      final quizzes = await _repo.fetchQuizzes();
+      final quizzes = await _repo.fetchQuizByCreator(event.createdBy);
+      print('✅ Loaded ${quizzes.length} quizzes');
       emit(QuizLoaded(quizzes: quizzes));
     } catch (e) {
+      print('❌ Error: $e');
       emit(QuizError(message: e.toString()));
     }
   }
 
   Future<void> _onCreateQuiz(CreateQuiz event, Emitter<QuizState> emit) async {
-
     final current = state;
     if (current is! QuizLoaded) return;
 
     emit(QuizLoaded(quizzes: current.quizzes, isSaving: true));
 
-    try{
+    try {
       final newQuiz = await _repo.createQuizWithQuestions(
-        title: event.title, 
-        description: event.description, 
-        createdBy: event.createdBy, 
-        questions: event.questions);
-        emit(QuizLoaded(quizzes: [...current.quizzes, newQuiz]));
-    }catch(e){
+          title: event.title,
+          description: event.description,
+          createdBy: event.createdBy,
+          questions: event.questions);
+      emit(QuizLoaded(quizzes: [...current.quizzes, newQuiz]));
+    } catch (e) {
       emit(QuizError(message: e.toString()));
     }
-
   }
 
   void _onDeleteQuiz(DeleteQuiz event, Emitter<QuizState> emit) async {
     final current = state;
     if (current is! QuizLoaded) return;
-    try{
+    try {
       await _repo.deleteQuiz(event.quizId);
-      emit(current.copyWith(quizzes: current.quizzes.where((q) => q.id != event.quizId).toList()));
-
-    }catch(e){
+      emit(current.copyWith(
+          quizzes:
+              current.quizzes.where((q) => q.id != event.quizId).toList()));
+    } catch (e) {
       emit(QuizError(message: e.toString()));
     }
   }
@@ -65,7 +67,8 @@ class QuizBloc extends Bloc<QuizEvent, QuizState> {
   ) {
     final current = state;
     if (current is! QuizLoaded) return;
-    final quiz = current.quizzes.firstWhere((q) => q.id == event.quizId, orElse: () => current.quizzes.first);
+    final quiz = current.quizzes.firstWhere((q) => q.id == event.quizId,
+        orElse: () => current.quizzes.first);
     emit(current.copyWith(selectedQuiz: quiz));
   }
 }

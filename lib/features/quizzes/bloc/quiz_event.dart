@@ -8,7 +8,11 @@ abstract class QuizEvent extends Equatable {
 
 /// Charger la liste des quizzes au démarrage
 class LoadQuizzes extends QuizEvent {
-  const LoadQuizzes();
+  const LoadQuizzes({required this.createdBy});
+  final String createdBy;
+
+  @override
+  List<Object?> get props => [createdBy];
 }
 
 /// Créer un nouveau quiz

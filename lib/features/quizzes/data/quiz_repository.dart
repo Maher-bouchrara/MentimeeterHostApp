@@ -26,6 +26,27 @@ const _quizzesQuery = r'''
   }
 ''';
 
+const _quizzesByCreatorQuery = r'''
+  query QuizzesByCreator($createdBy: String!) {
+    quizzesByCreator(createdBy: $createdBy) {
+      id
+      title
+      description
+      createdAt
+      questions {
+        id
+        text
+        optionA
+        optionB
+        optionC
+        optionD
+        correctOption
+        orderIndex
+      }
+    }
+  }
+''';
+
 // ── Mutations ────────────────────────────────────────────────────────
 
 const _createQuizMutation = r'''
@@ -96,6 +117,29 @@ class QuizRepository {
     }
 
     final list = result.data?['quizzes'] as List<dynamic>? ?? [];
+    return list.map(_quizFromJson).toList();
+  }
+
+  //GetQuizzesByCreator
+  Future<List<Quiz>> fetchQuizByCreator(String createdBy) async {
+    print('📡 Fetching quizzes for creator: $createdBy');
+    final result = await _client.query(
+      QueryOptions(
+        document: gql(_quizzesByCreatorQuery),
+        variables: {'createdBy': createdBy},
+        fetchPolicy: FetchPolicy.networkOnly,
+      ),
+    );
+
+    print('📡 Response: ${result.data}');
+    print('📡 Has exception: ${result.hasException}');
+    if (result.hasException) {
+      print('❌ Error: ${result.exception}');
+      throw Exception(result.exception.toString());
+    }
+
+    final list = result.data?['quizzesByCreator'] as List<dynamic>? ?? [];
+    print('📡 Found ${list.length} quizzes');
     return list.map(_quizFromJson).toList();
   }
 

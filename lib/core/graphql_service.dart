@@ -52,6 +52,18 @@ class GraphQLService {
     }
   ''';
 
+  static const String getUserByFirebaseUidQuery = r'''
+    query GetUserByFirebaseUid($firebaseUid: String!) {
+      userByFirebaseUid(firebaseUid: $firebaseUid) {
+        id
+        displayName
+        firebaseUid
+        role
+        createdAt
+      }
+    }
+  ''';
+
   // ── Methods pour requêtes GraphQL ────────────────────
 
   /// Crée un user dans PostgreSQL via GraphQL
@@ -105,6 +117,33 @@ class GraphQLService {
       return user;
     } catch (e) {
       print('Error fetching user: $e');
+      return null;
+    }
+  }
+
+  /// Récupère l'ID du user via firebaseUid
+  Future<String?> getUserIdByFirebaseUid(String firebaseUid) async {
+    print('📡 getUserIdByFirebaseUid called with: $firebaseUid');
+    try {
+      final result = await client.query(
+        QueryOptions(
+          document: gql(getUserByFirebaseUidQuery),
+          variables: {'firebaseUid': firebaseUid},
+        ),
+      );
+
+      print('📡 Query result hasException: ${result.hasException}');
+      print('📡 Query result data: ${result.data}');
+      if (result.hasException) {
+        print('❌ GraphQL Error: ${result.exception}');
+        return null;
+      }
+
+      final userId = result.data?['userByFirebaseUid']?['id'] as String?;
+      print('📡 Extracted userId: $userId');
+      return userId;
+    } catch (e) {
+      print('❌ Error fetching user by firebaseUid: $e');
       return null;
     }
   }

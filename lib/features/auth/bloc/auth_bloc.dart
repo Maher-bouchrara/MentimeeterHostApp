@@ -11,14 +11,23 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<LoginRequested>(_onLoginRequested);
     on<SignupRequested>(_onSignupRequested);
     on<LogoutRequested>(_onLogoutRequested);
+    on<CheckAuthRequested>(_onCheckAuthRequested);
+
+    // Charger le userId si déjà connecté
+    if (state is AuthAuthenticated) {
+      print('🔐 AuthBloc init - Already authenticated, loading userId');
+      add(const CheckAuthRequested());
+    }
   }
 
   static AuthState _initialState() {
     final user = FirebaseAuth.instance.currentUser;
+    print('🔐 _initialState - Firebase user: ${user?.uid}');
     if (user != null) {
       return AuthAuthenticated(
         email: user.email ?? '',
         displayName: user.displayName,
+        userId: null, // Will be loaded asynchronously
       );
     }
     return const AuthInitial();
@@ -38,10 +47,19 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
       final email = credential.user?.email ?? event.email;
       final displayName = credential.user?.displayName;
+      final firebaseUid = credential.user?.uid;
+
+      // Récupérer le vrai userId PostgreSQL via Firebase UID
+      final postgresUserId = await GraphQLService.instance
+          .getUserIdByFirebaseUid(firebaseUid ?? '');
+
+      print(
+          '✅ Login successful - Firebase UID: $firebaseUid, PostgreSQL ID: $postgresUserId');
 
       emit(AuthAuthenticated(
         email: email,
         displayName: displayName,
+        userId: postgresUserId,
       ));
     } on FirebaseAuthException catch (e) {
       emit(AuthError(message: _mapFirebaseError(e.code)));
@@ -84,6 +102,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       }
 
       final email = credential.user?.email ?? event.email;
+      print('✅ Signup successful - PostgreSQL ID: $postgresUserId');
+
       emit(AuthAuthenticated(
         email: email,
         userId: postgresUserId,
@@ -102,6 +122,48 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   ) async {
     await FirebaseAuth.instance.signOut();
     emit(const AuthInitial());
+  }
+
+  Future<void> _onCheckAuthRequested(
+    CheckAuthRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    print('🔐 CheckAuthRequested triggered');
+    final currentState = state;
+    print('🔐 Current state: $currentState');
+    if (currentState is! AuthAuthenticated) {
+      print('🔐 Not authenticated, returning');
+      return;
+    }
+    if (currentState.userId != null) {
+      print('🔐 UserId already set: ${currentState.userId}');
+      return;
+    }
+
+    final firebaseUid = FirebaseAuth.instance.currentUser?.uid;
+    print('🔐 FirebaseUid: $firebaseUid');
+    if (firebaseUid == null) {
+      emit(const AuthInitial());
+      return;
+    }
+
+    try {
+      final userId =
+          await GraphQLService.instance.getUserIdByFirebaseUid(firebaseUid);
+      print('🔐 Retrieved PostgreSQL userId: $userId');
+      if (userId != null) {
+        emit(AuthAuthenticated(
+          email: currentState.email,
+          userId: userId,
+          displayName: currentState.displayName,
+        ));
+        print('✅ Updated AuthAuthenticated with PostgreSQL userId: $userId');
+      } else {
+        print('❌ userId is null from GraphQL');
+      }
+    } catch (e) {
+      print('❌ Error loading userId: $e');
+    }
   }
 
   String _mapFirebaseError(String code) {

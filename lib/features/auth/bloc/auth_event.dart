@@ -30,3 +30,7 @@ class SignupRequested extends AuthEvent {
 class LogoutRequested extends AuthEvent {
   const LogoutRequested();
 }
+
+class CheckAuthRequested extends AuthEvent {
+  const CheckAuthRequested();
+}

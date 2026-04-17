@@ -27,7 +27,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
   void initState() {
     super.initState();
     // Charger les quizzes au démarrage
-    context.read<QuizBloc>().add(const LoadQuizzes());
+    print('🚀 DashboardScreen.initState - hostUserId: ${widget.hostUserId}');
+    if (widget.hostUserId != null) {
+      print('✅ Triggering LoadQuizzes with ${widget.hostUserId}');
+      context.read<QuizBloc>().add(LoadQuizzes(createdBy: widget.hostUserId!));
+    } else {
+      print('❌ hostUserId is null!');
+    }
   }
 
   void _openCreateQuiz() {
@@ -118,15 +124,30 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         ),
                       ),
                       // ── Bouton + New ──
-                      ElevatedButton.icon(
-                        onPressed: _openCreateQuiz,
-                        icon: const Icon(Icons.add, size: 16),
-                        label: const Text('New'),
-                        style: ElevatedButton.styleFrom(
-                          minimumSize: const Size(0, 36),
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 8),
-                        ),
+                      Row(
+                        children: [
+                          // Bouton refresh temporaire
+                          IconButton(
+                            icon: const Icon(Icons.refresh, size: 18),
+                            onPressed: () {
+                              if (widget.hostUserId != null) {
+                                ctx.read<QuizBloc>().add(
+                                    LoadQuizzes(createdBy: widget.hostUserId!));
+                              }
+                            },
+                            tooltip: 'Rafraîchir',
+                          ),
+                          ElevatedButton.icon(
+                            onPressed: _openCreateQuiz,
+                            icon: const Icon(Icons.add, size: 16),
+                            label: const Text('New'),
+                            style: ElevatedButton.styleFrom(
+                              minimumSize: const Size(0, 36),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 8),
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
